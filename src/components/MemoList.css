@@ -303,6 +303,69 @@
   color: #e52222;
 }
 
+/* ソートバー */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.sort-label {
+  font-size: 0.72rem;
+  color: #9d5e7a;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.sort-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #f0d0e0;
+  color: #9d5e7a;
+  font-size: 0.74rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 14px;
+  padding: 6px 12px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.sort-btn:hover {
+  border-color: #e8a8c4;
+}
+
+.sort-btn.active {
+  background: linear-gradient(135deg, #e52222 0%, #c0392b 100%);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(192, 57, 43, 0.3);
+}
+
+.sort-dir {
+  font-size: 0.66rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 2px 6px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .section-label {
   font-size: 0.8rem;
   color: #9d5e7a;

@@ -41,6 +41,21 @@ const FILTER_COLORS = [
 
 const colorKey = (color) => color || 'none'
 
+// カラー別ソート時の色の並び順（FILTER_COLORS の順番）
+const COLOR_ORDER = FILTER_COLORS.reduce((acc, c, i) => {
+  acc[c.key] = i
+  return acc
+}, {})
+
+// Firestore Timestamp / 各種値をミリ秒に変換（保存直後で未確定なら最新扱い）
+const getTime = (ts) => {
+  if (!ts) return Number.MAX_SAFE_INTEGER
+  if (typeof ts.toMillis === 'function') return ts.toMillis()
+  if (typeof ts.seconds === 'number') return ts.seconds * 1000
+  const t = new Date(ts).getTime()
+  return Number.isNaN(t) ? Number.MAX_SAFE_INTEGER : t
+}
+
 export default function MemoList({ userName, onLogout }) {
   const [memos, setMemos] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -49,6 +64,8 @@ export default function MemoList({ userName, onLogout }) {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [hiddenColors, setHiddenColors] = useState(() => new Set())
+  const [sortMode, setSortMode] = useState('created') // 'created' | 'color'
+  const [createdDir, setCreatedDir] = useState('desc') // 'desc'(新しい順) | 'asc'(古い順)
   const isInitialLoad = useRef(true)
 
   const toggleColorFilter = (key) => {
@@ -61,6 +78,17 @@ export default function MemoList({ userName, onLogout }) {
   }
 
   const resetColorFilter = () => setHiddenColors(new Set())
+
+  // 作成順ボタン: 未選択なら選択、選択中なら方向をトグル
+  const handleSortCreated = () => {
+    if (sortMode === 'created') {
+      setCreatedDir((d) => (d === 'desc' ? 'asc' : 'desc'))
+    } else {
+      setSortMode('created')
+    }
+  }
+
+  const handleSortColor = () => setSortMode('color')
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
@@ -193,10 +221,21 @@ export default function MemoList({ userName, onLogout }) {
       )
     : memos
 
-  const filteredMemos =
+  const colorFiltered =
     hiddenColors.size > 0
       ? searchFiltered.filter((m) => !hiddenColors.has(colorKey(m.color)))
       : searchFiltered
+
+  const filteredMemos = [...colorFiltered].sort((a, b) => {
+    if (sortMode === 'color') {
+      const oa = COLOR_ORDER[colorKey(a.color)] ?? 999
+      const ob = COLOR_ORDER[colorKey(b.color)] ?? 999
+      if (oa !== ob) return oa - ob
+      return getTime(b.createdAt) - getTime(a.createdAt) // 同色内は新しい順
+    }
+    const diff = getTime(a.createdAt) - getTime(b.createdAt)
+    return createdDir === 'desc' ? -diff : diff
+  })
 
   const pinnedMemos = filteredMemos.filter((m) => m.pinned)
   const unpinnedMemos = filteredMemos.filter((m) => !m.pinned)
@@ -245,7 +284,7 @@ export default function MemoList({ userName, onLogout }) {
           <button onClick={onLogout} className="logout-btn" title="ログアウト">
             ログアウト
           </button>
-          <span className="header-version">v1.8.0</span>
+          <span className="header-version">v1.9.0</span>
         </div>
       </header>
 
@@ -287,6 +326,33 @@ export default function MemoList({ userName, onLogout }) {
               すべて表示
             </button>
           )}
+        </div>
+
+        <div className="sort-bar">
+          <span className="sort-label">↕️ 並び替え</span>
+          <div className="sort-options">
+            <button
+              type="button"
+              className={`sort-btn${sortMode === 'created' ? ' active' : ''}`}
+              onClick={handleSortCreated}
+              title="作成順（タップで新しい順／古い順を切替）"
+            >
+              🕐 作成順
+              {sortMode === 'created' && (
+                <span className="sort-dir">
+                  {createdDir === 'desc' ? '新しい順 ↓' : '古い順 ↑'}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              className={`sort-btn${sortMode === 'color' ? ' active' : ''}`}
+              onClick={handleSortColor}
+              title="カラー別に並べる"
+            >
+              🎨 カラー別
+            </button>
+          </div>
         </div>
 
         {loading ? (
