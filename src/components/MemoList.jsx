@@ -29,6 +29,18 @@ const getDeviceId = () => {
 
 const DEVICE_ID = getDeviceId()
 
+// カラーフィルターの選択肢（MemoForm の COLOR_OPTIONS と対応）
+const FILTER_COLORS = [
+  { key: 'none',    value: null,      label: 'なし',     bg: '#e9ecef' },
+  { key: '#ffb3c6', value: '#ffb3c6', label: 'ピンク',   bg: '#ffb3c6' },
+  { key: '#ff6b6b', value: '#ff6b6b', label: 'レッド',   bg: '#ff6b6b' },
+  { key: '#ffa94d', value: '#ffa94d', label: 'オレンジ', bg: '#ffa94d' },
+  { key: '#69db7c', value: '#69db7c', label: 'グリーン', bg: '#69db7c' },
+  { key: '#74c0fc', value: '#74c0fc', label: 'ブルー',   bg: '#74c0fc' },
+]
+
+const colorKey = (color) => color || 'none'
+
 export default function MemoList({ userName, onLogout }) {
   const [memos, setMemos] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -36,7 +48,19 @@ export default function MemoList({ userName, onLogout }) {
   const [viewingMemo, setViewingMemo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [hiddenColors, setHiddenColors] = useState(() => new Set())
   const isInitialLoad = useRef(true)
+
+  const toggleColorFilter = (key) => {
+    setHiddenColors((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const resetColorFilter = () => setHiddenColors(new Set())
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
@@ -161,13 +185,18 @@ export default function MemoList({ userName, onLogout }) {
     })
   }
 
-  const filteredMemos = searchQuery.trim()
+  const searchFiltered = searchQuery.trim()
     ? memos.filter(
         (m) =>
           (m.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
           (m.content || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     : memos
+
+  const filteredMemos =
+    hiddenColors.size > 0
+      ? searchFiltered.filter((m) => !hiddenColors.has(colorKey(m.color)))
+      : searchFiltered
 
   const pinnedMemos = filteredMemos.filter((m) => m.pinned)
   const unpinnedMemos = filteredMemos.filter((m) => !m.pinned)
@@ -216,7 +245,7 @@ export default function MemoList({ userName, onLogout }) {
           <button onClick={onLogout} className="logout-btn" title="ログアウト">
             ログアウト
           </button>
-          <span className="header-version">v1.7.0</span>
+          <span className="header-version">v1.8.0</span>
         </div>
       </header>
 
@@ -235,6 +264,31 @@ export default function MemoList({ userName, onLogout }) {
           )}
         </div>
 
+        <div className="color-filter-bar">
+          <span className="color-filter-label">🎨 色で絞り込み</span>
+          <div className="color-filter-swatches">
+            {FILTER_COLORS.map((opt) => {
+              const active = !hiddenColors.has(opt.key)
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  className={`color-filter-swatch${active ? ' active' : ''}`}
+                  style={{ background: opt.bg }}
+                  onClick={() => toggleColorFilter(opt.key)}
+                  title={`${opt.label}を${active ? '非表示にする' : '表示する'}`}
+                  aria-pressed={active}
+                />
+              )
+            })}
+          </div>
+          {hiddenColors.size > 0 && (
+            <button className="color-filter-reset" onClick={resetColorFilter}>
+              すべて表示
+            </button>
+          )}
+        </div>
+
         {loading ? (
           <div className="empty-state">読み込み中...</div>
         ) : filteredMemos.length === 0 ? (
@@ -243,6 +297,14 @@ export default function MemoList({ userName, onLogout }) {
               <>
                 <span className="empty-emoji">🔍</span>
                 <p className="empty-title">「{searchQuery}」は見つかりませんでした</p>
+              </>
+            ) : hiddenColors.size > 0 && memos.length > 0 ? (
+              <>
+                <span className="empty-emoji">🎨</span>
+                <p className="empty-title">表示中の色に一致するメモがありません</p>
+                <button className="color-filter-reset" onClick={resetColorFilter}>
+                  すべて表示
+                </button>
               </>
             ) : (
               <>

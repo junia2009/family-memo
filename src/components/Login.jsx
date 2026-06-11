@@ -150,7 +150,7 @@ export default function Login({ onLogin, onGoogleLogin }) {
           )}
         </button>
 
-        <p className="login-version">v1.7.0</p>
+        <p className="login-version">v1.8.0</p>
       </div>
     </div>
   )

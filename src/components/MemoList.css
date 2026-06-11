@@ -220,6 +220,89 @@
   color: #e52222;
 }
 
+/* カラーフィルターバー */
+.color-filter-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.color-filter-label {
+  font-size: 0.72rem;
+  color: #9d5e7a;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.color-filter-swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-filter-swatch {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s, opacity 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+
+.color-filter-swatch.active {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(229, 34, 34, 0.5);
+}
+
+.color-filter-swatch.active:hover {
+  transform: scale(1.1);
+}
+
+/* 非表示（非アクティブ）の色は淡く＋斜線 */
+.color-filter-swatch:not(.active) {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+}
+
+.color-filter-swatch:not(.active)::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: #8a5a78;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 2px;
+}
+
+.color-filter-reset {
+  background: #fff;
+  border: 1.5px solid #f0d0e0;
+  color: #9d5e7a;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 12px;
+  padding: 5px 12px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.color-filter-reset:hover {
+  border-color: #e52222;
+  color: #e52222;
+}
+
 .section-label {
   font-size: 0.8rem;
   color: #9d5e7a;
