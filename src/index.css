@@ -1,0 +1,50 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN',
+    'Hiragino Sans', 'Meiryo', sans-serif;
+  background-color: #f5f3ff;
+  color: #1a1050;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  height: 100%;
+}
+
+html {
+  height: 100%;
+}
+
+.global-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
+  background: linear-gradient(160deg, #0b1a3e 0%, #1a3d8f 60%, #2f1b6b 100%);
+}
+
+.global-loading::before {
+  content: '🏰';
+  font-size: 3rem;
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+.global-loading::after {
+  content: '読み込み中...';
+  font-size: 1rem;
+  color: #a0c0f0;
+  font-weight: 500;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  56% { transform: scale(1); }
+}

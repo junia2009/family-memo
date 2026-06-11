@@ -1,0 +1,84 @@
+/* 著者・ステータス行 */
+.detail-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.detail-pin-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: rgba(249, 168, 37, 0.15);
+  color: #b07000;
+  border: 1px solid rgba(249, 168, 37, 0.3);
+}
+
+/* カラーバー */
+.detail-color-bar {
+  height: 5px;
+  border-radius: 3px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+/* タイトル */
+.detail-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1050;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* 本文 */
+.detail-body {
+  font-size: 0.95rem;
+  color: #3d2b3d;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 16px;
+  background: #fdf4f8;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #f0d0e0;
+}
+
+/* 画像 */
+.detail-image-wrap {
+  margin-bottom: 16px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: zoom-in;
+}
+
+.detail-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  display: block;
+  border-radius: 14px;
+  transition: opacity 0.2s;
+}
+
+.detail-image:hover {
+  opacity: 0.9;
+}
+
+/* 日時 */
+.detail-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #9070c0;
+  background: rgba(150, 120, 220, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
