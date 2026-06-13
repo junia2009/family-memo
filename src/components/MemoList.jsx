@@ -79,6 +79,11 @@ export default function MemoList({ userName, onLogout }) {
 
   const resetColorFilter = () => setHiddenColors(new Set())
 
+  // 全色を非表示にする（すべてのカラーフィルターを解除）
+  const hideAllColors = () => setHiddenColors(new Set(FILTER_COLORS.map((c) => c.key)))
+
+  const allHidden = hiddenColors.size === FILTER_COLORS.length
+
   // 作成順ボタン: 未選択なら選択、選択中なら方向をトグル
   const handleSortCreated = () => {
     if (sortMode === 'created') {
@@ -321,6 +326,11 @@ export default function MemoList({ userName, onLogout }) {
               )
             })}
           </div>
+          {!allHidden && (
+            <button className="color-filter-reset" onClick={hideAllColors}>
+              全色解除
+            </button>
+          )}
           {hiddenColors.size > 0 && (
             <button className="color-filter-reset" onClick={resetColorFilter}>
               すべて表示
