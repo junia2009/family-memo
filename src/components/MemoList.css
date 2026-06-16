@@ -573,34 +573,34 @@
 
 @keyframes bgSparkleFloat {
   0%   { transform: translateY(0)      rotate(0deg);   opacity: 0; }
-  8%   { opacity: 0.32; }
-  92%  { opacity: 0.22; }
+  8%   { opacity: 0.5; }
+  92%  { opacity: 0.34; }
   100% { transform: translateY(-100vh) rotate(540deg); opacity: 0; }
 }
 
 @keyframes bgSparkleFloat0 {
   0%   { transform: translateY(0)      translateX(0)    rotate(0deg);   opacity: 0; }
-  8%   { opacity: 0.34; }
+  8%   { opacity: 0.52; }
   30%  { transform: translateY(-30vh)  translateX(18px)  rotate(180deg); }
   60%  { transform: translateY(-60vh)  translateX(-12px) rotate(360deg); }
-  92%  { opacity: 0.2; }
+  92%  { opacity: 0.32; }
   100% { transform: translateY(-100vh) translateX(8px)   rotate(540deg); opacity: 0; }
 }
 
 @keyframes bgSparkleFloat1 {
   0%   { transform: translateY(0)      translateX(0)     rotate(0deg);   opacity: 0; }
-  8%   { opacity: 0.36; }
+  8%   { opacity: 0.55; }
   30%  { transform: translateY(-28vh)  translateX(-20px) rotate(120deg); }
   60%  { transform: translateY(-58vh)  translateX(15px)  rotate(300deg); }
-  92%  { opacity: 0.22; }
+  92%  { opacity: 0.34; }
   100% { transform: translateY(-100vh) translateX(-6px)  rotate(480deg); opacity: 0; }
 }
 
 @keyframes bgSparkleFloat2 {
   0%   { transform: translateY(0)      translateX(0)    rotate(0deg);   opacity: 0; }
-  8%   { opacity: 0.3; }
+  8%   { opacity: 0.48; }
   40%  { transform: translateY(-40vh)  translateX(24px) rotate(200deg); }
   70%  { transform: translateY(-70vh)  translateX(-8px) rotate(400deg); }
-  92%  { opacity: 0.18; }
+  92%  { opacity: 0.3; }
   100% { transform: translateY(-100vh) translateX(4px)  rotate(560deg); opacity: 0; }
 }

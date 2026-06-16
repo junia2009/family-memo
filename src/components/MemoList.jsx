@@ -252,17 +252,17 @@ export default function MemoList({ userName, onLogout }) {
 
   return (
     <div className="memo-app">
-      {/* 背景浮遊（控えめ） */}
-      {['✨','✦','·','✨','✦','·','✨','✦'].map((s, i) => (
+      {/* 背景浮遊（ほどよく軽やかに） */}
+      {['✨','💫','⭐','✨','💫','⭐','✨','💫','⭐','✨','💫','⭐'].map((s, i) => (
         <span
           key={i}
           className={`bg-sparkle bg-sparkle-${i % 3}`}
           style={{
-            left: `${(i * 13 + 6) % 94}%`,
+            left: `${(i * 11 + 4) % 95}%`,
             bottom: `-${8 + (i % 6) * 3}%`,
-            fontSize: `${0.7 + (i % 4) * 0.25}rem`,
-            animationDelay: `${i * 1.4}s`,
-            animationDuration: `${9 + (i % 4) * 2}s`,
+            fontSize: `${1.3 + (i % 4) * 0.4}rem`,
+            animationDelay: `${i * 0.9}s`,
+            animationDuration: `${7 + (i % 4) * 1.8}s`,
           }}
         >{s}</span>
       ))}
