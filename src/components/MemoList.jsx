@@ -252,17 +252,17 @@ export default function MemoList({ userName, onLogout }) {
 
   return (
     <div className="memo-app">
-      {/* 背景浮遊キラキラ */}
-      {['✨','💫','⭐','🌟','🏰','✨','💫','⭐','💥','🌟','✨','🏰','💫','⭐','✨','🌟','💥','⭐','✨','💫'].map((s, i) => (
+      {/* 背景浮遊（控えめ） */}
+      {['✨','✦','·','✨','✦','·','✨','✦'].map((s, i) => (
         <span
           key={i}
           className={`bg-sparkle bg-sparkle-${i % 3}`}
           style={{
-            left: `${(i * 5 + 2) % 96}%`,
+            left: `${(i * 13 + 6) % 94}%`,
             bottom: `-${8 + (i % 6) * 3}%`,
-            fontSize: `${0.9 + (i % 5) * 0.35}rem`,
-            animationDelay: `${i * 0.7}s`,
-            animationDuration: `${6 + (i % 5) * 1.5}s`,
+            fontSize: `${0.7 + (i % 4) * 0.25}rem`,
+            animationDelay: `${i * 1.4}s`,
+            animationDuration: `${9 + (i % 4) * 2}s`,
           }}
         >{s}</span>
       ))}
@@ -384,21 +384,21 @@ export default function MemoList({ userName, onLogout }) {
               </>
             ) : (
               <>
-                {/* 浮遊するキラキラ */}
-                {['✨','🌟','💫','⭐','✨','💫','🌟','✨'].map((s, i) => (
+                {/* 浮遊する小さな光（控えめ） */}
+                {['✨','✦','·','✨','✦'].map((s, i) => (
                   <span
                     key={i}
                     className="empty-sparkle"
                     style={{
-                      left: `${10 + i * 11}%`,
-                      animationDelay: `${i * 0.6}s`,
-                      animationDuration: `${3.5 + (i % 3)}s`,
-                      fontSize: `${0.8 + (i % 3) * 0.3}rem`,
+                      left: `${15 + i * 17}%`,
+                      animationDelay: `${i * 0.9}s`,
+                      animationDuration: `${5 + (i % 3)}s`,
+                      fontSize: `${0.7 + (i % 3) * 0.2}rem`,
                     }}
                   >{s}</span>
                 ))}
                 <div className="empty-icon-wrap">
-                  <span className="empty-emoji empty-emoji-pulse">🏰</span>
+                  <span className="empty-emoji empty-emoji-pulse">📝</span>
                   <span className="empty-icon-ring" />
                   <span className="empty-icon-ring empty-icon-ring2" />
                 </div>

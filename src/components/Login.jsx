@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './Login.css'
 
-const FLOATS = ['⭐', '✨', '🌟', '💫', '🏰', '🎠', '🌙', '🪄', '🎡', '👑']
+const FLOATS = ['✨', '✦', '·', '✨', '✦', '·', '✨', '✦']
 
 export default function Login({ onLogin, onGoogleLogin }) {
   const [passcode, setPasscode] = useState('')

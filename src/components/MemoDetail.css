@@ -29,7 +29,7 @@
 .detail-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #1a1050;
+  color: #3d2f28;
   margin-bottom: 12px;
   line-height: 1.4;
   word-break: break-all;
@@ -38,15 +38,15 @@
 /* 本文 */
 .detail-body {
   font-size: 0.95rem;
-  color: #3d2b3d;
+  color: #5c4d44;
   line-height: 1.8;
   white-space: pre-wrap;
   word-break: break-all;
   margin-bottom: 16px;
-  background: #fdf4f8;
+  background: #fbf4ec;
   border-radius: 12px;
   padding: 12px 14px;
-  border: 1px solid #f0d0e0;
+  border: 1px solid #ece0d4;
 }
 
 /* 画像 */
@@ -76,8 +76,8 @@
   align-items: center;
   gap: 4px;
   font-size: 0.75rem;
-  color: #9070c0;
-  background: rgba(150, 120, 220, 0.1);
+  color: #9a7256;
+  background: rgba(168, 120, 80, 0.12);
   padding: 3px 10px;
   border-radius: 20px;
   margin-bottom: 20px;

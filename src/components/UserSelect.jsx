@@ -1,8 +1,8 @@
 import './UserSelect.css'
 
 const USERS = [
-  { name: 'あや', emoji: '👩', color: '#f953c6' },
-  { name: 'りょう', emoji: '👨', color: '#4f8ef7' },
+  { name: 'あや', emoji: '👩', color: '#b06a85' },
+  { name: 'りょう', emoji: '👨', color: '#5f7fa8' },
 ]
 
 export default function UserSelect({ onSelect }) {

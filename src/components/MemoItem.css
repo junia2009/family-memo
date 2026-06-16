@@ -8,7 +8,7 @@
   padding: 16px 12px 16px 18px;
   margin-bottom: 12px;
   box-shadow:
-    0 2px 12px rgba(100, 60, 180, 0.08),
+    0 2px 12px rgba(120, 85, 60, 0.1),
     0 1px 3px rgba(0,0,0,0.04);
   display: flex;
   gap: 8px;
@@ -25,7 +25,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(100,60,180,0.04) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(150,100,60,0.05) 0%, transparent 60%);
   opacity: 0;
   transition: opacity 0.25s;
   pointer-events: none;
@@ -42,7 +42,7 @@
 .memo-item:hover {
   transform: translateY(-3px) scale(1.01);
   box-shadow:
-    0 8px 24px rgba(100, 60, 180, 0.14),
+    0 8px 24px rgba(120, 85, 60, 0.16),
     0 2px 6px rgba(0,0,0,0.06);
 }
 
@@ -73,7 +73,7 @@
 .memo-title {
   font-size: 0.96rem;
   font-weight: 700;
-  color: #1a1050;
+  color: #3d2f28;
   margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
@@ -83,7 +83,7 @@
 
 .memo-body {
   font-size: 0.87rem;
-  color: #4a3d70;
+  color: #5c4d44;
   line-height: 1.65;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -99,8 +99,8 @@
   align-items: center;
   gap: 4px;
   font-size: 0.73rem;
-  color: #9070c0;
-  background: rgba(150, 120, 220, 0.12);
+  color: #9a7256;
+  background: rgba(168, 120, 80, 0.12);
   padding: 2px 8px;
   border-radius: 20px;
 }
@@ -136,7 +136,7 @@
 }
 
 .action-btn:hover {
-  background: #f0eeff;
+  background: #f4ece3;
   transform: scale(1.15);
 }
 
@@ -175,15 +175,15 @@
 }
 
 .author-badge.aya {
-  background: rgba(249, 83, 198, 0.12);
-  color: #c0306a;
-  border: 1px solid rgba(249, 83, 198, 0.25);
+  background: rgba(176, 106, 133, 0.14);
+  color: #a05a78;
+  border: 1px solid rgba(176, 106, 133, 0.3);
 }
 
 .author-badge.ryo {
-  background: rgba(79, 142, 247, 0.12);
-  color: #2563cc;
-  border: 1px solid rgba(79, 142, 247, 0.25);
+  background: rgba(95, 127, 168, 0.14);
+  color: #4f6f9c;
+  border: 1px solid rgba(95, 127, 168, 0.3);
 }
 
 .read-check {
@@ -196,7 +196,7 @@
 ============================== */
 .memo-item.unread {
   box-shadow:
-    0 2px 12px rgba(79, 142, 247, 0.15),
+    0 2px 12px rgba(95, 127, 168, 0.16),
     0 1px 3px rgba(0,0,0,0.04);
 }
 
@@ -206,9 +206,9 @@
   right: 12px;
   width: 9px;
   height: 9px;
-  background: #4f8ef7;
+  background: #5f7fa8;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px white, 0 0 6px rgba(79, 142, 247, 0.5);
+  box-shadow: 0 0 0 2px white, 0 0 6px rgba(95, 127, 168, 0.5);
   animation: pulseDot 1.8s ease-in-out infinite;
 }
 
