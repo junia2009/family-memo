@@ -1,3 +1,4 @@
+import { getMemoImages } from '../imageUtils'
 import './MemoItem.css'
 
 function formatDate(timestamp) {
@@ -15,6 +16,7 @@ export default function MemoItem({ memo, userName, onView, onEdit, onDelete, onT
   const isFromPartner = memo.author && memo.author !== userName
   const isUnread = isFromPartner && !(memo.readBy || []).includes(userName)
   const isAya = memo.author === 'あや'
+  const images = getMemoImages(memo)
 
   return (
     <div
@@ -35,14 +37,18 @@ export default function MemoItem({ memo, userName, onView, onEdit, onDelete, onT
         </div>
         {memo.title && <h3 className="memo-title">{memo.title}</h3>}
         {memo.content && <p className="memo-body">{memo.content}</p>}
-        {memo.imageUrl && (
-          <div className="memo-image-wrap">
-            <img
-              src={memo.imageUrl}
-              alt="添付画像"
-              className="memo-image"
-              onClick={(e) => { e.stopPropagation(); window.open(memo.imageUrl, '_blank') }}
-            />
+        {images.length > 0 && (
+          <div className={`memo-image-grid count-${Math.min(images.length, 3)}`}>
+            {images.map((url, i) => (
+              <div className="memo-image-wrap" key={url}>
+                <img
+                  src={url}
+                  alt={`添付画像 ${i + 1}`}
+                  className="memo-image"
+                  onClick={(e) => { e.stopPropagation(); window.open(url, '_blank') }}
+                />
+              </div>
+            ))}
           </div>
         )}
         <span className="memo-date">

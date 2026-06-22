@@ -1,3 +1,4 @@
+import { getMemoImages } from '../imageUtils'
 import './MemoForm.css'
 import './MemoDetail.css'
 
@@ -15,6 +16,7 @@ function formatDate(timestamp) {
 
 export default function MemoDetail({ memo, onClose, onEdit }) {
   const isAya = memo.author === 'あや'
+  const images = getMemoImages(memo)
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose()
@@ -54,15 +56,19 @@ export default function MemoDetail({ memo, onClose, onEdit }) {
           {/* 本文 */}
           {memo.content && <p className="detail-body">{memo.content}</p>}
 
-          {/* 画像 */}
-          {memo.imageUrl && (
-            <div className="detail-image-wrap">
-              <img
-                src={memo.imageUrl}
-                alt="添付画像"
-                className="detail-image"
-                onClick={() => window.open(memo.imageUrl, '_blank')}
-              />
+          {/* 画像（複数可） */}
+          {images.length > 0 && (
+            <div className="detail-image-list">
+              {images.map((url, i) => (
+                <div className="detail-image-wrap" key={url}>
+                  <img
+                    src={url}
+                    alt={`添付画像 ${i + 1}`}
+                    className="detail-image"
+                    onClick={() => window.open(url, '_blank')}
+                  />
+                </div>
+              ))}
             </div>
           )}
 

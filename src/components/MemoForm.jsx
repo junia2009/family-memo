@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { getMemoImages } from '../imageUtils'
 import './MemoForm.css'
 const COLOR_OPTIONS = [
   { value: null,      label: 'なし',     bg: '#e9ecef' },
@@ -43,42 +44,51 @@ export default function MemoForm({ memo, onSave, onCancel }) {
   const [content, setContent] = useState(memo?.content || '')
   const [pinned, setPinned] = useState(memo?.pinned || false)
   const [color, setColor] = useState(memo?.color || null)
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(memo?.imageUrl || null)
-  const [removeImage, setRemoveImage] = useState(false)
+  // 既存の（保存済み）画像URL一覧。ここから削除すると保存時にStorageからも消える
+  const [existingUrls, setExistingUrls] = useState(() => getMemoImages(memo))
+  // 新規追加した画像（圧縮済みBlob + プレビューURL）
+  const [newImages, setNewImages] = useState([])
   const [imageError, setImageError] = useState('')
   const [compressing, setCompressing] = useState(false)
   const [saving, setSaving] = useState(false)
   const fileInputRef = useRef(null)
 
   const handleImageChange = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setImageError('画像ファイルを選択してください')
-      return
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      setImageError('5MB以下の画像を選択してください')
-      return
-    }
+    const files = Array.from(e.target.files || [])
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (files.length === 0) return
     setImageError('')
     setCompressing(true)
     try {
-      const compressed = await compressImage(file)
-      setImageFile(compressed)
-      setImagePreview(URL.createObjectURL(compressed))
-      setRemoveImage(false)
+      const added = []
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+          setImageError('画像ファイルを選択してください')
+          continue
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          setImageError('5MB以下の画像を選択してください')
+          continue
+        }
+        const compressed = await compressImage(file)
+        added.push({ file: compressed, preview: URL.createObjectURL(compressed) })
+      }
+      if (added.length > 0) setNewImages((prev) => [...prev, ...added])
     } finally {
       setCompressing(false)
     }
   }
 
-  const handleRemoveImage = () => {
-    setImageFile(null)
-    setImagePreview(null)
-    setRemoveImage(true)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+  const handleRemoveExisting = (url) => {
+    setExistingUrls((prev) => prev.filter((u) => u !== url))
+  }
+
+  const handleRemoveNew = (index) => {
+    setNewImages((prev) => {
+      const target = prev[index]
+      if (target) URL.revokeObjectURL(target.preview)
+      return prev.filter((_, i) => i !== index)
+    })
   }
 
   const handleSubmit = async (e) => {
@@ -86,7 +96,14 @@ export default function MemoForm({ memo, onSave, onCancel }) {
     if (!title.trim() && !content.trim()) return
     setSaving(true)
     try {
-      await onSave({ title: title.trim(), content: content.trim(), pinned, color, imageFile, removeImage })
+      await onSave({
+        title: title.trim(),
+        content: content.trim(),
+        pinned,
+        color,
+        existingUrls,
+        newFiles: newImages.map((n) => n.file),
+      })
     } finally {
       setSaving(false)
     }
@@ -147,32 +164,44 @@ export default function MemoForm({ memo, onSave, onCancel }) {
             </div>
           </div>
 
-          {/* 画像添付 */}
+          {/* 画像添付（複数可） */}
           <div className="image-picker">
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               id="image-upload"
               className="image-input-hidden"
               onChange={handleImageChange}
             />
-            {imagePreview ? (
-              <div className="image-preview-wrap">
-                <img src={imagePreview} alt="プレビュー" className="image-preview" />
-                <button type="button" className="image-remove-btn" onClick={handleRemoveImage} title="画像を削除">
-                  ✕
-                </button>
+            {(existingUrls.length > 0 || newImages.length > 0) && (
+              <div className="image-preview-grid">
+                {existingUrls.map((url) => (
+                  <div className="image-preview-wrap" key={url}>
+                    <img src={url} alt="プレビュー" className="image-preview" />
+                    <button type="button" className="image-remove-btn" onClick={() => handleRemoveExisting(url)} title="画像を削除">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                {newImages.map((img, i) => (
+                  <div className="image-preview-wrap" key={img.preview}>
+                    <img src={img.preview} alt="プレビュー" className="image-preview" />
+                    <button type="button" className="image-remove-btn" onClick={() => handleRemoveNew(i)} title="画像を削除">
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <label htmlFor="image-upload" className={`image-upload-btn${compressing ? ' compressing' : ''}`}>
-                {compressing ? (
-                  <><span className="spinner-dark" /> 圧縮中...</>
-                ) : (
-                  <><span>📷</span><span>写真を追加</span></>
-                )}
-              </label>
             )}
+            <label htmlFor="image-upload" className={`image-upload-btn${compressing ? ' compressing' : ''}`}>
+              {compressing ? (
+                <><span className="spinner-dark" /> 圧縮中...</>
+              ) : (
+                <><span>📷</span><span>写真を追加</span></>
+              )}
+            </label>
             {imageError && <p className="image-error">{imageError}</p>}
           </div>
           <div className="form-actions">

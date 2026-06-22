@@ -81,13 +81,14 @@ memo-app/
 ### データモデル（Firestore）
 
 - `memos/{memoId}` … メモ本体
-  - `title`, `content`, `pinned`, `color`, `imageUrl`
+  - `title`, `content`, `pinned`, `color`, `imageUrls`（添付画像URLの配列）
   - `author`（投稿者名）, `deviceId`（通知の自己判定用）
   - `readBy`（既読ユーザー名の配列）
   - `createdAt`, `updatedAt`
 - `userProfiles/{uid}` … Google ログインユーザーの表示名
 
-画像は Storage の `memos/{memoId}/image` に保存されます。
+画像は Storage の `memos/{memoId}/images/{imageId}` に保存されます（1メモに複数枚添付可能）。
+旧形式の単一画像（`imageUrl` フィールド / `memos/{memoId}/image`）も表示時に自動で読み込まれます。
 
 ---
 

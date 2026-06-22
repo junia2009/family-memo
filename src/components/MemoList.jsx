@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 import { db, storage } from '../firebase'
+import { getMemoImages } from '../imageUtils'
 import MemoForm from './MemoForm'
 import MemoItem from './MemoItem'
 import MemoDetail from './MemoDetail'
@@ -147,48 +148,60 @@ export default function MemoList({ userName, onLogout }) {
     return () => unsubscribe()
   }, [userName, showNotification])
 
+  // 1枚アップロードして公開URLを返す（一意パスに保存）
   const uploadImage = async (memoId, imageFile) => {
-    const storageRef = ref(storage, `memos/${memoId}/image`)
+    const storageRef = ref(storage, `memos/${memoId}/images/${crypto.randomUUID()}`)
     await uploadBytes(storageRef, imageFile)
     return getDownloadURL(storageRef)
   }
 
-  const handleAddMemo = async ({ title, content, pinned, color, imageFile }) => {
+  // ダウンロードURLからStorage上のオブジェクトを削除
+  const deleteImageByUrl = async (url) => {
+    try { await deleteObject(ref(storage, url)) } catch {}
+  }
+
+  const handleAddMemo = async ({ title, content, pinned, color, newFiles = [] }) => {
     const docRef = await addDoc(collection(db, 'memos'), {
       title,
       content,
       pinned: pinned || false,
       color: color || null,
-      imageUrl: null,
+      imageUrls: [],
       author: userName,
       deviceId: DEVICE_ID,
       readBy: [userName],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     })
-    if (imageFile) {
-      const url = await uploadImage(docRef.id, imageFile)
-      await updateDoc(docRef, { imageUrl: url })
+    if (newFiles.length > 0) {
+      const urls = []
+      for (const file of newFiles) {
+        urls.push(await uploadImage(docRef.id, file))
+      }
+      await updateDoc(docRef, { imageUrls: urls })
     }
     setShowForm(false)
   }
 
-  const handleUpdateMemo = async ({ title, content, pinned, color, imageFile, removeImage }) => {
+  const handleUpdateMemo = async ({ title, content, pinned, color, existingUrls = [], newFiles = [] }) => {
     const memoRef = doc(db, 'memos', editingMemo.id)
-    const updateData = {
+    // フォームで削除された既存画像をStorageから消す
+    const removedUrls = getMemoImages(editingMemo).filter((u) => !existingUrls.includes(u))
+    await Promise.all(removedUrls.map(deleteImageByUrl))
+    // 新規画像をアップロード
+    const newUrls = []
+    for (const file of newFiles) {
+      newUrls.push(await uploadImage(editingMemo.id, file))
+    }
+    await updateDoc(memoRef, {
       title,
       content,
       pinned,
       color: color || null,
+      imageUrls: [...existingUrls, ...newUrls],
+      imageUrl: null, // 旧形式フィールドはクリア
       updatedAt: serverTimestamp(),
-    }
-    if (removeImage) {
-      try { await deleteObject(ref(storage, `memos/${editingMemo.id}/image`)) } catch {}
-      updateData.imageUrl = null
-    } else if (imageFile) {
-      updateData.imageUrl = await uploadImage(editingMemo.id, imageFile)
-    }
-    await updateDoc(memoRef, updateData)
+    })
     setEditingMemo(null)
     setShowForm(false)
   }
@@ -196,8 +209,8 @@ export default function MemoList({ userName, onLogout }) {
   const handleDeleteMemo = async (id) => {
     if (!window.confirm('このメモを削除しますか？')) return
     const memo = memos.find((m) => m.id === id)
-    if (memo?.imageUrl) {
-      try { await deleteObject(ref(storage, `memos/${id}/image`)) } catch {}
+    if (memo) {
+      await Promise.all(getMemoImages(memo).map(deleteImageByUrl))
     }
     await deleteDoc(doc(db, 'memos', id))
   }
@@ -289,7 +302,7 @@ export default function MemoList({ userName, onLogout }) {
           <button onClick={onLogout} className="logout-btn" title="ログアウト">
             ログアウト
           </button>
-          <span className="header-version">v1.9.0</span>
+          <span className="header-version">v1.10.0</span>
         </div>
       </header>
 

@@ -49,9 +49,15 @@
   border: 1px solid #ece0d4;
 }
 
-/* 画像 */
-.detail-image-wrap {
+/* 画像（複数可） */
+.detail-image-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-bottom: 16px;
+}
+
+.detail-image-wrap {
   border-radius: 14px;
   overflow: hidden;
   cursor: zoom-in;
