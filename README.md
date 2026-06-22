@@ -82,6 +82,7 @@ memo-app/
 
 - `memos/{memoId}` … メモ本体
   - `title`, `content`, `pinned`, `color`, `imageUrls`（添付画像URLの配列）
+  - `order`（手動並び替え用の表示順。未設定なら末尾扱い）
   - `author`（投稿者名）, `deviceId`（通知の自己判定用）
   - `readBy`（既読ユーザー名の配列）
   - `createdAt`, `updatedAt`

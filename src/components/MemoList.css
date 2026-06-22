@@ -366,6 +366,25 @@
   white-space: nowrap;
 }
 
+.sort-hint {
+  width: 100%;
+  margin: 2px 4px 0;
+  font-size: 0.72rem;
+  color: #8a6f5f;
+  letter-spacing: 0.02em;
+}
+
+/* 並べ替え可能なメモ（長押しドラッグ）。
+   long-press(200ms)で起動するため、通常のスクロールは維持される */
+.sortable-memo {
+  touch-action: manipulation;
+  cursor: grab;
+}
+
+.sortable-memo:active {
+  cursor: grabbing;
+}
+
 .section-label {
   font-size: 0.8rem;
   color: #8a6f5f;

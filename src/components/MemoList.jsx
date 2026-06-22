@@ -10,14 +10,47 @@ import {
   query,
   orderBy,
   arrayUnion,
+  writeBatch,
 } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { db, storage } from '../firebase'
 import { getMemoImages } from '../imageUtils'
 import MemoForm from './MemoForm'
 import MemoItem from './MemoItem'
 import MemoDetail from './MemoDetail'
 import './MemoList.css'
+
+// 長押しドラッグで並べ替え可能なメモ項目のラッパー
+function SortableMemoItem({ memo, ...props }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: memo.id })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 10 : 'auto',
+    position: 'relative',
+  }
+  return (
+    <div ref={setNodeRef} style={style} className="sortable-memo" {...attributes} {...listeners}>
+      <MemoItem memo={memo} {...props} />
+    </div>
+  )
+}
 
 const getDeviceId = () => {
   let id = localStorage.getItem('memo_device_id')
@@ -65,9 +98,14 @@ export default function MemoList({ userName, onLogout }) {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [hiddenColors, setHiddenColors] = useState(() => new Set())
-  const [sortMode, setSortMode] = useState('created') // 'created' | 'color'
+  const [sortMode, setSortMode] = useState('created') // 'created' | 'color' | 'manual'
   const [createdDir, setCreatedDir] = useState('desc') // 'desc'(新しい順) | 'asc'(古い順)
   const isInitialLoad = useRef(true)
+
+  // 長押し（200ms）でドラッグ開始。通常のタップ・スクロールは妨げない
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+  )
 
   const toggleColorFilter = (key) => {
     setHiddenColors((prev) => {
@@ -95,6 +133,8 @@ export default function MemoList({ userName, onLogout }) {
   }
 
   const handleSortColor = () => setSortMode('color')
+
+  const handleSortManual = () => setSortMode('manual')
 
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
@@ -245,6 +285,12 @@ export default function MemoList({ userName, onLogout }) {
       : searchFiltered
 
   const filteredMemos = [...colorFiltered].sort((a, b) => {
+    if (sortMode === 'manual') {
+      const oa = typeof a.order === 'number' ? a.order : Number.MAX_SAFE_INTEGER
+      const ob = typeof b.order === 'number' ? b.order : Number.MAX_SAFE_INTEGER
+      if (oa !== ob) return oa - ob
+      return getTime(b.createdAt) - getTime(a.createdAt) // 未設定どうしは新しい順
+    }
     if (sortMode === 'color') {
       const oa = COLOR_ORDER[colorKey(a.color)] ?? 999
       const ob = COLOR_ORDER[colorKey(b.color)] ?? 999
@@ -260,6 +306,74 @@ export default function MemoList({ userName, onLogout }) {
   const unreadCount = memos.filter(
     (m) => m.author !== userName && !(m.readBy || []).includes(userName)
   ).length
+
+  // 手動モードかつ絞り込みなしのときだけドラッグ可能
+  const isFiltering = !!searchQuery.trim() || hiddenColors.size > 0
+  const dragEnabled = sortMode === 'manual' && !isFiltering
+
+  // 並べ替え結果（ピン留め→通常の順）を order に採番して保存
+  const persistOrder = async (orderedMemos) => {
+    const batch = writeBatch(db)
+    orderedMemos.forEach((m, i) => {
+      if (m.order !== i) batch.update(doc(db, 'memos', m.id), { order: i })
+    })
+    await batch.commit()
+  }
+
+  // セクション（ピン留め / 通常）内でのドラッグ完了処理
+  const handleDragEnd = (group) => (event) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const list = group === 'pinned' ? pinnedMemos : unpinnedMemos
+    const oldIndex = list.findIndex((m) => m.id === active.id)
+    const newIndex = list.findIndex((m) => m.id === over.id)
+    if (oldIndex < 0 || newIndex < 0) return
+    const reordered = arrayMove(list, oldIndex, newIndex)
+    const combined =
+      group === 'pinned'
+        ? [...reordered, ...unpinnedMemos]
+        : [...pinnedMemos, ...reordered]
+    // 楽観的にローカルの order を更新（スナップショット待ちのちらつき防止）
+    const orderMap = new Map(combined.map((m, i) => [m.id, i]))
+    setMemos((prev) =>
+      prev.map((m) => (orderMap.has(m.id) ? { ...m, order: orderMap.get(m.id) } : m))
+    )
+    persistOrder(combined)
+  }
+
+  // ドラッグ可否に応じてセクションを描画
+  const renderSection = (sectionMemos, group) => {
+    if (!dragEnabled) {
+      return sectionMemos.map((memo) => (
+        <MemoItem
+          key={memo.id}
+          memo={memo}
+          userName={userName}
+          onView={handleViewMemo}
+          onEdit={handleEditMemo}
+          onDelete={handleDeleteMemo}
+          onTogglePin={handleTogglePin}
+        />
+      ))
+    }
+    return (
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd(group)}>
+        <SortableContext items={sectionMemos.map((m) => m.id)} strategy={verticalListSortingStrategy}>
+          {sectionMemos.map((memo) => (
+            <SortableMemoItem
+              key={memo.id}
+              memo={memo}
+              userName={userName}
+              onView={handleViewMemo}
+              onEdit={handleEditMemo}
+              onDelete={handleDeleteMemo}
+              onTogglePin={handleTogglePin}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    )
+  }
 
   const partnerName = userName === 'あや' ? 'りょう' : 'あや'
 
@@ -302,7 +416,7 @@ export default function MemoList({ userName, onLogout }) {
           <button onClick={onLogout} className="logout-btn" title="ログアウト">
             ログアウト
           </button>
-          <span className="header-version">v1.10.0</span>
+          <span className="header-version">v1.11.0</span>
         </div>
       </header>
 
@@ -375,7 +489,22 @@ export default function MemoList({ userName, onLogout }) {
             >
               🎨 カラー別
             </button>
+            <button
+              type="button"
+              className={`sort-btn${sortMode === 'manual' ? ' active' : ''}`}
+              onClick={handleSortManual}
+              title="長押ししながら動かして自由に並べ替え"
+            >
+              ✋ 手動
+            </button>
           </div>
+          {sortMode === 'manual' && (
+            <p className="sort-hint">
+              {isFiltering
+                ? '⚠️ 検索・絞り込み中は並べ替えできません'
+                : '💡 メモを長押ししながら動かすと並べ替えできます'}
+            </p>
+          )}
         </div>
 
         {loading ? (
@@ -425,17 +554,7 @@ export default function MemoList({ userName, onLogout }) {
             {pinnedMemos.length > 0 && (
               <section>
                 <h2 className="section-label">📌 ピン留め</h2>
-                {pinnedMemos.map((memo) => (
-                  <MemoItem
-                    key={memo.id}
-                    memo={memo}
-                    userName={userName}
-                    onView={handleViewMemo}
-                    onEdit={handleEditMemo}
-                    onDelete={handleDeleteMemo}
-                    onTogglePin={handleTogglePin}
-                  />
-                ))}
+                {renderSection(pinnedMemos, 'pinned')}
               </section>
             )}
             {unpinnedMemos.length > 0 && (
@@ -443,17 +562,7 @@ export default function MemoList({ userName, onLogout }) {
                 {pinnedMemos.length > 0 && (
                   <h2 className="section-label">📝 メモ一覧</h2>
                 )}
-                {unpinnedMemos.map((memo) => (
-                  <MemoItem
-                    key={memo.id}
-                    memo={memo}
-                    userName={userName}
-                    onView={handleViewMemo}
-                    onEdit={handleEditMemo}
-                    onDelete={handleDeleteMemo}
-                    onTogglePin={handleTogglePin}
-                  />
-                ))}
+                {renderSection(unpinnedMemos, 'unpinned')}
               </section>
             )}
           </>
